@@ -1,0 +1,55 @@
+
+{% extends "base.html" %}
+
+{% block title %}System Logs - Oraco Kenya SecureFiles{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">System Activity Logs</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                                <th>IP Address</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td><strong>{{ log[0] }}</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ 
+                                        'success' if log[1] == 'Login' else
+                                        'info' if log[1] == 'File Upload' else
+                                        'warning' if log[1] == 'File Download' else
+                                        'danger' if log[1] == 'Logout' else
+                                        'primary'
+                                    }}">
+                                        {{ log[1] }}
+                                    </span>
+                                </td>
+                                <td>{{ log[2] if log[2] else '-' }}</td>
+                                <td><code>{{ log[3] if log[3] else '-' }}</code></td>
+                                <td>{{ log[4] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
