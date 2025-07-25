@@ -15,6 +15,8 @@ import json
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+
 # Email credentials
 EMAIL_ADDRESS = 'oraco.system@gmail.com'
 EMAIL_PASSWORD = 'rhlh iokg fkyq fgpi'  # Use an App Password if using Gmail
@@ -23,6 +25,7 @@ EMAIL_PASSWORD = 'rhlh iokg fkyq fgpi'  # Use an App Password if using Gmail
 app = Flask(__name__)
 app.secret_key = 'your_super_secret_key_1234567890'
 
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # Configuration
 UPLOAD_FOLDER = 'uploads'
@@ -496,6 +499,40 @@ def reset_password():
             flash("Email not found or failed to send.", "danger")
         return redirect(url_for('reset_password'))
     return render_template('reset_password.html')  # Show form
+# This should go at the top of your app.py with your imports
+
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password_token(token):
+    try:
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
+    except SignatureExpired:
+        flash("The reset link has expired.", "danger")
+        return redirect(url_for('reset_password'))
+    except BadSignature:
+        flash("Invalid reset token.", "danger")
+        return redirect(url_for('reset_password'))
+
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        if new_password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return render_template('set_new_password.html')
+
+        # Save new password to DB
+        conn = sqlite3.connect('oraco.db')
+        c = conn.cursor()
+        c.execute("UPDATE users SET password = ? WHERE email = ?", (new_password, email))
+        conn.commit()
+        conn.close()
+
+        flash("Password updated successfully!", "success")
+        return redirect(url_for('login'))
+
+    return render_template('set_new_password.html')
+
 
 @app.route('/resend_reset_email', methods=['GET'])
 def resend_reset_email():
@@ -508,7 +545,7 @@ def resend_reset_email():
     if success:
         flash("Password reset email resent! Please check your inbox.", "success")
     else:
-        flash("Failed to resend password reset email.", "error")
+        flash("Failed to resend password reset email.", "danger")
     return redirect(url_for('reset_password'))
 
  
