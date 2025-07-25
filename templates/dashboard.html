@@ -1,142 +1,18 @@
-
-{% extends "base.html" %}
-
-{% block title %}Dashboard - Oraco Kenya SecureFiles{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Welcome, {{ session.full_name }}!</h2>
-            <a href="{{ url_for('upload_file') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Upload New File
-            </a>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-files-o me-2"></i>My Files</h5>
-            </div>
-            <div class="card-body">
-                {% if files %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Filename</th>
-                                <th>Size</th>
-                                <th>Uploaded</th>
-                                <th>Access Count</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for file in files %}
-                            <tr>
-                                <td>
-                                    <i class="fas fa-file me-2"></i>{{ file[1] }}
-                                    {% if file[5] %}
-                                    <small class="text-muted">(shared by {{ file[5] }})</small>
-                                    {% endif %}
-                                </td>
-                                <td>{{ "%.2f"|format(file[2]/1024) }} KB</td>
-                                <td>{{ file[3][:16] }}</td>
-                                <td><span class="badge bg-secondary">{{ file[4] }}</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-success" onclick="downloadFile({{ file[0] }}, '{{ file[1] }}')">
-                                        <i class="fas fa-download me-1"></i>Download
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center py-4">
-                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">No files uploaded yet. <a href="{{ url_for('upload_file') }}">Upload your first file</a></p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
-            </div>
-            <div class="card-body">
-                {% if activities %}
-                <div class="timeline">
-                    {% for activity in activities %}
-                    <div class="timeline-item mb-3">
-                        <div class="timeline-marker bg-primary"></div>
-                        <div class="timeline-content">
-                            <strong>{{ activity[0] }}</strong>
-                            {% if activity[1] %}
-                            <br><small class="text-muted">{{ activity[1] }}</small>
-                            {% endif %}
-                            <br><small class="text-muted">{{ activity[2][:16] }}</small>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <p class="text-muted">No recent activity</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Download Modal -->
-<div class="modal fade" id="downloadModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Enter Decryption Password</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="downloadForm">
-                    <div class="mb-3">
-                        <label for="downloadPassword" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="downloadPassword" required>
-                    </div>
-                    <input type="hidden" id="fileId">
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="confirmDownload()">Download</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-function downloadFile(fileId, filename) {
-    document.getElementById('fileId').value = fileId;
-    document.getElementById('downloadPassword').value = '';
-    new bootstrap.Modal(document.getElementById('downloadModal')).show();
-}
-
-function confirmDownload() {
-    const fileId = document.getElementById('fileId').value;
-    const password = document.getElementById('downloadPassword').value;
-    
-    if (password) {
-        window.location.href = `/download/${fileId}?password=${encodeURIComponent(password)}`;
-        bootstrap.Modal.getInstance(document.getElementById('downloadModal')).hide();
-    }
-}
-</script>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to ORACO Dashboard</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+        {% for category, message in messages %}
+          <li><strong>{{ category }}:</strong> {{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>
