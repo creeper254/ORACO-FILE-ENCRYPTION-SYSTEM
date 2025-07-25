@@ -464,7 +464,8 @@ def generate_and_send_reset_email(email):
 
     # Prepare email content
     base_url = "https://oraco-file-encryption-system.onrender.com"  # Your actual deployed domain
-    reset_link = f"{base_url}/reset/{reset_token}"
+    reset_link = reset_link = f"{base_url}/reset_password/{reset_token}"
+
 
     sender_email = 'oraco.system@gmail.com'
     msg = MIMEMultipart()

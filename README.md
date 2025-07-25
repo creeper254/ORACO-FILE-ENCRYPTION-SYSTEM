@@ -3,7 +3,7 @@
 
 A secure file encryption and decryption system built with Flask, featuring AES-256 encryption, user management, and comprehensive logging.
 
-## 🔐 Features
+## Features
 
 - **AES-256 Encryption**: Military-grade file encryption using PBKDF2 key derivation
 - **User Management**: Admin interface for managing users and permissions
@@ -13,7 +13,7 @@ A secure file encryption and decryption system built with Flask, featuring AES-2
 - **Admin Dashboard**: Real-time statistics and system monitoring
 - **Role-based Access**: Admin and user role separation
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 oraco-kenya-securefiles/
@@ -38,7 +38,7 @@ oraco-kenya-securefiles/
 └── encrypted_files/       # Encrypted file storage
 ```
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Python 3.11+
@@ -69,7 +69,7 @@ oraco-kenya-securefiles/
      - Username: `admin`
      - Password: `admin123`
 
-## 👥 User Roles
+##  User Roles
 
 ### Admin Users
 - Access to admin dashboard
@@ -85,7 +85,7 @@ oraco-kenya-securefiles/
 - Personal activity history
 - Password management
 
-## 🔧 Core Functionality
+##  Core Functionality
 
 ### File Encryption Process
 1. User uploads file with encryption password
@@ -109,7 +109,7 @@ oraco-kenya-securefiles/
 - **Activity Logging**: Complete audit trail
 - **File Access Control**: Owner and sharing permissions
 
-## 📊 Database Schema
+##  Database Schema
 
 ### Users Table
 - User credentials and profile information
@@ -129,7 +129,7 @@ oraco-kenya-securefiles/
 - Timestamp and action details
 - System security monitoring
 
-## 🛠️ Configuration
+##  Configuration
 
 ### Environment Variables
 - `FLASK_SECRET_KEY`: Flask session secret (auto-generated if not set)
@@ -145,7 +145,7 @@ oraco-kenya-securefiles/
 - **Salt Length**: 16 bytes
 - **Encryption**: AES-256 via Fernet
 
-## 📋 Usage Examples
+##  Usage Examples
 
 ### Admin Tasks
 1. **Add New User**
@@ -174,7 +174,7 @@ oraco-kenya-securefiles/
    - During upload, select users to share with
    - Shared users can decrypt with the same password
 
-## 🔒 Security Best Practices
+## Security Best Practices
 
 1. **Strong Passwords**: Use complex passwords for encryption
 2. **Regular Monitoring**: Check system logs regularly
@@ -182,7 +182,7 @@ oraco-kenya-securefiles/
 4. **Backup Strategy**: Regular database backups recommended
 5. **Network Security**: Use HTTPS in production
 
-## 🏢 Oraco Kenya Integration
+## Oraco Kenya Integration
 
 This system is designed specifically for Oraco Kenya's internal file security needs:
 - Departmental user organization
@@ -190,11 +190,11 @@ This system is designed specifically for Oraco Kenya's internal file security ne
 - Local time zone considerations
 - Organizational security policies compliance
 
-## 📞 Support
+## Support
 
 For technical support or feature requests, contact the IT Department at Oraco Kenya.
 
-## 📄 License
+##  License
 
 Proprietary software for Oraco Kenya internal use only.
 
