@@ -441,36 +441,6 @@ def add_user():
     
     return render_template('add_user.html')
 
-
-  def generate_and_send_reset_email(email):
-    # ...code that creates token, saves to DB, and sends email...
-    # return True or False depending on success
-@app.route('/reset_password', methods=['GET', 'POST'])
-def reset_password():
-    if request.method == 'POST':
-        email = request.form['email']
-        
-        conn = sqlite3.connect('oraco_system.db')
-        c = conn.cursor()
-        c.execute('SELECT id FROM users WHERE email = ?', (email,))
-        user = c.fetchone()
-        
-        if user:
-            session['last_reset_email'] = email  # Save here for resending
-            
-            success = generate_and_send_reset_email(email)
-            if success:
-                flash('Password reset email sent! Please check your inbox.', 'success')
-            else:
-                flash('Failed to send password reset email.', 'error')
-        else:
-            flash('Email not found!', 'error')
-        
-        conn.close()
-    
-    return render_template('reset_password.html')
-
-
 def generate_and_send_reset_email(email):
     conn = sqlite3.connect('oraco_system.db')
     c = conn.cursor()
@@ -493,7 +463,7 @@ def generate_and_send_reset_email(email):
     conn.close()
 
     # Prepare email content
-    base_url = "https://oraco-secure-app.onrender.com"  # Your actual live domain here
+    base_url = "https://oraco-file-encryption-system.onrender.com"  # Your actual deployed domain
     reset_link = f"{base_url}/reset/{reset_token}"
 
     sender_email = 'oraco.system@gmail.com'
@@ -508,13 +478,23 @@ def generate_and_send_reset_email(email):
     try:
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(sender_email, 'rhlhiokgfkyqfgpi')  # Use your app password here
+        server.login(sender_email, 'rhlhiokgfkyqfgpi')  # Replace with your actual app password
         server.send_message(msg)
         server.quit()
         return True
     except Exception as e:
         print("Email sending failed:", e)
         return False
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        if generate_and_send_reset_email(email):
+            flash("Password reset link has been sent to your email.", "success")
+        else:
+            flash("Email not found or failed to send.", "danger")
+        return redirect(url_for('reset_password'))
+    return render_template('reset_password.html')  # Show form
 
 @app.route('/resend_reset_email', methods=['GET'])
 def resend_reset_email():
@@ -603,6 +583,7 @@ def send_test_email():
     except Exception as e:
         flash(f" Failed to send email: {str(e)}", "danger")
     return redirect(url_for('dashboard'))
+
 @app.route('/reset/<token>', methods=['GET', 'POST'])
 def reset_with_token(token):
     conn = sqlite3.connect('oraco_system.db')
@@ -636,20 +617,21 @@ def reset_with_token(token):
 
         if new_password != confirm_password:
             flash("Passwords do not match!", "danger")
-            return render_template("reset_password_form.html", token=token)
+            return render_template("reset_form.html")
 
-        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+        # Hash the new password
+        hashed_password = generate_password_hash(new_password)
 
-        c.execute('''UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?''', (hashed_password, user_id))
+        # Update password and clear token
+        c.execute("UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?",
+                  (hashed_password, user_id))
         conn.commit()
         conn.close()
 
-        flash(" Your password has been reset successfully.", "success")
+        flash("Password reset successful! You may now log in.", "success")
         return redirect(url_for('login'))
 
-    conn.close()
-    return render_template('reset_password_form.html', token=token)
-
+    return render_template("reset_form.html")
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
