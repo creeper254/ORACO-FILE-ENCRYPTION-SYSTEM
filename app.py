@@ -441,6 +441,10 @@ def add_user():
     
     return render_template('add_user.html')
 
+
+  def generate_and_send_reset_email(email):
+    # ...code that creates token, saves to DB, and sends email...
+    # return True or False depending on success
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password():
     if request.method == 'POST':
@@ -452,16 +456,13 @@ def reset_password():
         user = c.fetchone()
         
         if user:
-            reset_token = secrets.token_urlsafe(32)
-            expires = datetime.now() + timedelta(hours=1)
-            session['last_reset_email'] = email 
-
-            c.execute('''UPDATE users SET reset_token = ?, reset_token_expires = ? 
-                        WHERE email = ?''', (reset_token, expires, email))
-            conn.commit()
+            session['last_reset_email'] = email  # Save here for resending
             
-            # In a real application, send email here
-            flash(f'Password reset token: {reset_token} (expires in 1 hour)', 'info')
+            success = generate_and_send_reset_email(email)
+            if success:
+                flash('Password reset email sent! Please check your inbox.', 'success')
+            else:
+                flash('Failed to send password reset email.', 'error')
         else:
             flash('Email not found!', 'error')
         
@@ -470,59 +471,30 @@ def reset_password():
     return render_template('reset_password.html')
 
 
-@app.route('/resend_reset_email', methods=['GET'])
-def resend_reset_email():
-    if 'last_reset_email' not in session:
-        flash('No email to resend link to. Please initiate password reset again.', 'error')
-        return redirect(url_for('reset_password'))
-
-    email = session['last_reset_email']
-
+def generate_and_send_reset_email(email):
     conn = sqlite3.connect('oraco_system.db')
     c = conn.cursor()
 
-    c.execute('SELECT id FROM users WHERE email = ?', (email,))
+    # Check user exists
+    c.execute("SELECT id FROM users WHERE email = ?", (email,))
     user = c.fetchone()
+    if not user:
+        conn.close()
+        return False  # User not found
 
-    if user:
-        #  Generate token
-        token = secrets.token_urlsafe(32)
-        expires = datetime.now() + timedelta(hours=1)
+    user_id = user[0]
+    reset_token = secrets.token_urlsafe(32)
+    expires = datetime.now() + timedelta(hours=1)
 
-        # Save to DB
-        c.execute('''UPDATE users SET reset_token = ?, reset_token_expires = ?
-                     WHERE email = ?''', (token, expires, email))
-        conn.commit()
-
-        # Build reset link (using a placeholder URL, replace with your actual URL)
-        reset_link = f"https://oraco-secure-app.onrender.com/reset/{token}"
-        body = f"Click the link to reset your password (valid for 1 hour):\n\n{reset_link}"
-
-        # Email sending
-        msg = MIMEMultipart()
-        msg['From'] = EMAIL_ADDRESS
-        msg['To'] = email
-        msg['Subject'] = "Resend Password Reset Link"
-        msg.attach(MIMEText(body, 'plain'))
-
-        try:
-            server = smtplib.SMTP('smtp.gmail.com', 587)
-            server.starttls()
-            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_ADDRESS, email, msg.as_string())
-            server.quit()
-            flash('Password reset link resent successfully!', 'success')
-        except Exception as e:
-            flash(f'Failed to resend email: {str(e)}', 'error')
-    else:
-        flash('Email not found!', 'error')
-
+    # Save token and expiry to DB
+    c.execute('''UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?''',
+              (reset_token, expires, user_id))
+    conn.commit()
     conn.close()
-    return redirect(url_for('reset_password'))
 
-def send_password_reset_email(email, token):
-    base_url = "https://oraco-secure-app.onrender.com"  # live URL
-    reset_link = f"{base_url}/reset/{token}"
+    # Prepare email content
+    base_url = "https://oraco-secure-app.onrender.com"  # Your actual live domain here
+    reset_link = f"{base_url}/reset/{reset_token}"
 
     sender_email = 'oraco.system@gmail.com'
     msg = MIMEMultipart()
@@ -533,57 +505,65 @@ def send_password_reset_email(email, token):
     body = f"Click the link below to reset your password (valid for 1 hour):\n\n{reset_link}"
     msg.attach(MIMEText(body, 'plain'))
 
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(sender_email, 'your_app_password_here')  # Use your app password
-    server.send_message(msg)
-    server.quit()
-
-
-    if user:
-        reset_token = secrets.token_urlsafe(32)
-        expires = datetime.now() + timedelta(hours=1)
-
-        c.execute('''UPDATE users SET reset_token = ?, reset_token_expires = ? 
-                     WHERE email = ?''', (reset_token, expires, email))
-        conn.commit()
-        conn.close()
-
-        send_password_reset_email(email, reset_token)
-
-        flash('Password reset email resent. Please check your inbox.', 'info')
-    else:
-        conn.close()
-        flash('Email not found!', 'error')
-
-    return redirect(url_for('reset_password'))
-
-
-    # Step 4: Send email
     try:
-        sender_email = 'oraco.system@gmail.com'
-        receiver_email = email
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = receiver_email
-        msg['Subject'] = ' Resent ORACO Password Reset Link'
-
-        reset_link = f"http://127.0.0.1:5000/reset/{reset_token}"
-        body = f"Click the link below to reset your password (valid for 1 hour):\n\n{reset_link}"
-        msg.attach(MIMEText(body, 'plain'))
-
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(sender_email, 'rhlh iokg fkyq fgpi')  # Your app password
+        server.login(sender_email, 'rhlhiokgfkyqfgpi')  # Use your app password here
         server.send_message(msg)
         server.quit()
-
-        flash("Reset link resent to your email.", "success")
-
+        return True
     except Exception as e:
-        flash(f" Failed to resend email: {str(e)}", "danger")
+        print("Email sending failed:", e)
+        return False
+
+@app.route('/resend_reset_email', methods=['GET'])
+def resend_reset_email():
+    email = session.get('last_reset_email')
+    if not email:
+        flash("No email to resend link to. Please initiate password reset again.", "error")
+        return redirect(url_for('reset_password'))
+
+    success = generate_and_send_reset_email(email)
+    if success:
+        flash("Password reset email resent! Please check your inbox.", "success")
+    else:
+        flash("Failed to resend password reset email.", "error")
+    return redirect(url_for('reset_password'))
+
+ 
+    # Save to DB
+    c.execute('''UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?''',
+              (reset_token, expires, user_id))
+    conn.commit()
+    conn.close()
+
+    # Build reset link with the saved token
+    base_url = "https://oraco-secure-app.onrender.com"  # Your live URL
+    reset_link = f"{base_url}/reset/{reset_token}"
+
+    # Compose email
+    sender_email = 'oraco.system@gmail.com'
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = email
+    msg['Subject'] = 'ORACO Password Reset'
+
+    body = f"Click the link below to reset your password (valid for 1 hour):\n\n{reset_link}"
+    msg.attach(MIMEText(body, 'plain'))
+
+    # Send email
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(sender_email, 'your_app_password_here')  # Replace with your app password
+        server.send_message(msg)
+        server.quit()
+        flash("Password reset email sent! Check your inbox.", "success")
+    except Exception as e:
+        flash(f"Failed to send email: {str(e)}", "error")
 
     return redirect(url_for('reset_password'))
+
 
 @app.route('/system_logs')
 @require_admin
