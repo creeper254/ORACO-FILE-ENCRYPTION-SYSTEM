@@ -468,31 +468,7 @@ def reset_password():
         conn.close()
     
     return render_template('reset_password.html')
-@app.route('/reset/<token>', methods=['GET', 'POST'])
-def reset_with_token(token):
-    conn = sqlite3.connect('oraco_system.db')
-    c = conn.cursor()
-    c.execute('SELECT id, reset_token_expires FROM users WHERE reset_token = ?', (token,))
-    user = c.fetchone()
 
-    if not user:
-        flash('Invalid or expired reset token', 'error')
-        return redirect(url_for('reset_password'))
-
-    expires = datetime.strptime(user[1], '%Y-%m-%d %H:%M:%S.%f')
-    if datetime.now() > expires:
-        flash('Reset token has expired', 'error')
-        return redirect(url_for('reset_password'))
-
-    if request.method == 'POST':
-        new_password = request.form['password']
-        # Hash your password here before storing it!
-        c.execute('UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?', (new_password, user[0]))
-        conn.commit()
-        flash('Password reset successful! You can now login.', 'success')
-        return redirect(url_for('login'))
-
-    return render_template('reset_with_token.html', token=token)
 
 @app.route('/resend_reset_email', methods=['GET'])
 def resend_reset_email():
@@ -509,20 +485,20 @@ def resend_reset_email():
     user = c.fetchone()
 
     if user:
-        # ✅ Generate token
+        #  Generate token
         token = secrets.token_urlsafe(32)
         expires = datetime.now() + timedelta(hours=1)
 
-        # ✅ Save to DB
+        # Save to DB
         c.execute('''UPDATE users SET reset_token = ?, reset_token_expires = ?
                      WHERE email = ?''', (token, expires, email))
         conn.commit()
 
-        # ✅ Build reset link (use ngrok or local IP depending on your setup)
-        reset_link = f"https://YOUR_NGROK_SUBDOMAIN.ngrok-free.app/reset/{token}"
+        # Build reset link (using a placeholder URL, replace with your actual URL)
+        reset_link = f"https://oraco-secure-app.onrender.com/reset/{token}"
         body = f"Click the link to reset your password (valid for 1 hour):\n\n{reset_link}"
 
-        # ✅ Email sending
+        # Email sending
         msg = MIMEMultipart()
         msg['From'] = EMAIL_ADDRESS
         msg['To'] = email
@@ -544,24 +520,22 @@ def resend_reset_email():
     conn.close()
     return redirect(url_for('reset_password'))
 
-
 def send_password_reset_email(email, token):
+    base_url = "https://oraco-secure-app.onrender.com"  # live URL
+    reset_link = f"{base_url}/reset/{token}"
+
     sender_email = 'oraco.system@gmail.com'
-    receiver_email = email
     msg = MIMEMultipart()
     msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = '🔐 ORACO Password Reset'
-
-    ngrok_url= "https://40ec48e78479.ngrok-free.app"
-    reset_link=f"{ngrok_url}/reset/{token}"#use "token" instead of "reset_token" if you want to use the token variable directly
+    msg['To'] = email
+    msg['Subject'] = 'ORACO Password Reset'
 
     body = f"Click the link below to reset your password (valid for 1 hour):\n\n{reset_link}"
     msg.attach(MIMEText(body, 'plain'))
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login(sender_email, 'your_app_password_here')  # Use your app password here
+    server.login(sender_email, 'your_app_password_here')  # Use your app password
     server.send_message(msg)
     server.quit()
 
@@ -592,7 +566,7 @@ def send_password_reset_email(email, token):
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = receiver_email
-        msg['Subject'] = '🔁 Resent ORACO Password Reset Link'
+        msg['Subject'] = ' Resent ORACO Password Reset Link'
 
         reset_link = f"http://127.0.0.1:5000/reset/{reset_token}"
         body = f"Click the link below to reset your password (valid for 1 hour):\n\n{reset_link}"
@@ -604,10 +578,10 @@ def send_password_reset_email(email, token):
         server.send_message(msg)
         server.quit()
 
-        flash("✅ Reset link resent to your email.", "success")
+        flash("Reset link resent to your email.", "success")
 
     except Exception as e:
-        flash(f"❌ Failed to resend email: {str(e)}", "danger")
+        flash(f" Failed to resend email: {str(e)}", "danger")
 
     return redirect(url_for('reset_password'))
 
@@ -645,10 +619,56 @@ def send_test_email():
         server.send_message(msg)
         server.quit()
 
-        flash("✅ Email sent successfully!", "success")
+        flash("Email sent successfully!", "success")
     except Exception as e:
-        flash(f"❌ Failed to send email: {str(e)}", "danger")
+        flash(f" Failed to send email: {str(e)}", "danger")
     return redirect(url_for('dashboard'))
+@app.route('/reset/<token>', methods=['GET', 'POST'])
+def reset_with_token(token):
+    conn = sqlite3.connect('oraco_system.db')
+    c = conn.cursor()
+
+    # Check if token exists
+    c.execute("SELECT id, reset_token_expires FROM users WHERE reset_token = ?", (token,))
+    user = c.fetchone()
+
+    if not user:
+        conn.close()
+        flash("Invalid or expired token.", "danger")
+        return redirect(url_for('reset_password'))
+
+    user_id, token_expiry = user
+
+    # Check if token is expired
+    try:
+        expiry_time = datetime.strptime(token_expiry, "%Y-%m-%d %H:%M:%S.%f")
+    except:
+        expiry_time = datetime.strptime(token_expiry, "%Y-%m-%d %H:%M:%S")
+
+    if datetime.now() > expiry_time:
+        conn.close()
+        flash("Reset link has expired. Please request a new one.", "warning")
+        return redirect(url_for('reset_password'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        if new_password != confirm_password:
+            flash("Passwords do not match!", "danger")
+            return render_template("reset_password_form.html", token=token)
+
+        hashed_password = hashlib.sha256(new_password.encode()).hexdigest()
+
+        c.execute('''UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?''', (hashed_password, user_id))
+        conn.commit()
+        conn.close()
+
+        flash(" Your password has been reset successfully.", "success")
+        return redirect(url_for('login'))
+
+    conn.close()
+    return render_template('reset_password_form.html', token=token)
 
 if __name__ == '__main__':
     init_db()
