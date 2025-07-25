@@ -584,54 +584,40 @@ def send_test_email():
         flash(f" Failed to send email: {str(e)}", "danger")
     return redirect(url_for('dashboard'))
 
-@app.route('/reset/<token>', methods=['GET', 'POST'])
+from flask import render_template, flash, redirect, url_for, request
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_with_token(token):
-    conn = sqlite3.connect('oraco_system.db')
-    c = conn.cursor()
-
-    # Check if token exists
-    c.execute("SELECT id, reset_token_expires FROM users WHERE reset_token = ?", (token,))
-    user = c.fetchone()
-
-    if not user:
-        conn.close()
-        flash("Invalid or expired token.", "danger")
-        return redirect(url_for('reset_password'))
-
-    user_id, token_expiry = user
-
-    # Check if token is expired
     try:
-        expiry_time = datetime.strptime(token_expiry, "%Y-%m-%d %H:%M:%S.%f")
-    except:
-        expiry_time = datetime.strptime(token_expiry, "%Y-%m-%d %H:%M:%S")
-
-    if datetime.now() > expiry_time:
-        conn.close()
-        flash("Reset link has expired. Please request a new one.", "warning")
+        email = serializer.loads(token, salt='reset-password', max_age=3600)
+    except SignatureExpired:
+        flash('The reset link has expired.', 'danger')
+        return redirect(url_for('reset_password'))
+    except BadSignature:
+        flash('Invalid or corrupted reset token.', 'danger')
         return redirect(url_for('reset_password'))
 
     if request.method == 'POST':
-        new_password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+        password = request.form['password']
+        confirm = request.form['confirm_password']
 
-        if new_password != confirm_password:
-            flash("Passwords do not match!", "danger")
-            return render_template("reset_form.html")
+        if password != confirm:
+            flash('Passwords do not match.', 'warning')
+            return render_template('reset_form.html')
 
-        # Hash the new password
-        hashed_password = generate_password_hash(new_password)
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.set_password(password)
+            db.session.commit()
+            flash('Your password has been updated. Please log in.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('User not found.', 'danger')
+            return redirect(url_for('reset_password'))
 
-        # Update password and clear token
-        c.execute("UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?",
-                  (hashed_password, user_id))
-        conn.commit()
-        conn.close()
+    return render_template('reset_form.html')
 
-        flash("Password reset successful! You may now log in.", "success")
-        return redirect(url_for('login'))
 
-    return render_template("reset_form.html")
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)
