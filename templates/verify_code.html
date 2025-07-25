@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Code - Oraco Kenya Secure File Encryption{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="fas fa-key fa-3x text-warning mb-3"></i>
+                    <h4 class="card-title">Enter Verification Code</h4>
+                    <p class="text-muted">Please enter the 6-digit code sent to your email</p>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="code" class="form-label">Verification Code</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-shield-alt"></i></span>
+                            <input type="text" class="form-control text-center" id="code" name="code" 
+                                   required maxlength="6" pattern="[0-9]{6}" 
+                                   placeholder="Enter 6-digit code" style="font-size: 1.2rem; letter-spacing: 0.5rem;">
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Enter the 6-digit code sent to your email address
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning w-100 mb-3">
+                        <i class="fas fa-check me-2"></i>Verify Code
+                    </button>
+                </form>
+                
+                <div class="text-center">
+                    <a href="{{ url_for('reset_password') }}" class="text-decoration-none me-3">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Reset
+                    </a>
+                    <a href="{{ url_for('login') }}" class="text-decoration-none">
+                        <i class="fas fa-sign-in-alt me-1"></i>Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-focus on code input
+document.getElementById('code').focus();
+
+// Format code input
+document.getElementById('code').addEventListener('input', function(e) {
+    // Remove non-numeric characters
+    this.value = this.value.replace(/[^0-9]/g, '');
+    
+    // Limit to 6 digits
+    if (this.value.length > 6) {
+        this.value = this.value.slice(0, 6);
+    }
+});
+</script>
+{% endblock %} 

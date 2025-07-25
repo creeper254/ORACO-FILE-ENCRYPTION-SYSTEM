@@ -1,203 +1,196 @@
+# 🔐 ORACO Secure File Encryption System
 
-# Oraco Kenya SecureFiles - Complete File Encryption System
+A modern, secure file encryption and management system built with Flask, featuring AES-256 encryption, user management, and comprehensive admin controls.
 
-A secure file encryption and decryption system built with Flask, featuring AES-256 encryption, user management, and comprehensive logging.
+## ✨ Features
 
-## Features
+### 🔒 Security Features
+- **AES-256 Encryption**: Industry-standard encryption for all files
+- **PBKDF2 Key Derivation**: Secure password-based key generation
+- **Zero-Knowledge Architecture**: Passwords never stored on server
+- **Access Control**: Granular file sharing and permissions
+- **Audit Trail**: Complete activity logging for security monitoring
 
-- **AES-256 Encryption**: Military-grade file encryption using PBKDF2 key derivation
-- **User Management**: Admin interface for managing users and permissions
-- **File Sharing**: Secure file sharing between organization members
-- **Activity Logging**: Comprehensive audit trail of all system activities
-- **Password Reset**: Secure password reset functionality
-- **Admin Dashboard**: Real-time statistics and system monitoring
-- **Role-based Access**: Admin and user role separation
+### 👥 User Features
+- **File Upload & Encryption**: Secure file upload with custom passwords
+- **File Sharing**: Share encrypted files with specific users
+- **File Download**: Decrypt and download files with original passwords
+- **Dashboard**: Personal file management and activity tracking
+- **Modern UI**: Responsive, Bootstrap-based interface
 
-## Project Structure
+### 🛡️ Admin Features
+- **User Management**: Add, activate, deactivate, and delete users
+- **File Monitoring**: View all encrypted files in the system
+- **Activity Tracking**: Monitor user logins, file operations, and system activity
+- **System Logs**: Comprehensive audit trail with IP addresses and user agents
+- **Statistics Dashboard**: Real-time system statistics and metrics
 
-```
-oraco-kenya-securefiles/
-├── main.py                 # Main Flask application
-├── oraco_system.db         # SQLite database (auto-created)
-├── pyproject.toml          # Python dependencies
-├── .replit                 # Replit configuration
-├── README.md               # This file
-├── templates/              # HTML templates
-│   ├── base.html          # Base template
-│   ├── login.html         # Login page
-│   ├── dashboard.html     # User dashboard
-│   ├── admin_dashboard.html # Admin dashboard
-│   ├── upload.html        # File upload page
-│   ├── manage_users.html  # User management
-│   ├── add_user.html      # Add new user
-│   ├── reset_password.html # Password reset
-│   └── system_logs.html   # System activity logs
-├── static/css/
-│   └── style.css          # Application styles
-├── uploads/               # Temporary file storage
-└── encrypted_files/       # Encrypted file storage
-```
-
-##  Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- Flask 3.1.1+
-- Cryptography 45.0.5+
-- Werkzeug 3.1.3+
+- Python 3.7+
+- pip (Python package installer)
 
-### Installation & Setup
+### Installation
 
-1. **Clone/Download the project**
+1. **Clone or download the project**
    ```bash
-   # All files are already in your current directory
+   git clone <repository-url>
+   cd OracoSecureFileEncryptionSystem
    ```
 
-2. **Install Dependencies**
+2. **Install dependencies**
    ```bash
-   pip install flask cryptography werkzeug
+   pip install -r requirements.txt
    ```
 
-3. **Run the Application**
+3. **Reset database (creates fresh admin user)**
    ```bash
-   python main.py
+   python reset_db.py
    ```
 
-4. **Access the System**
-   - Open your browser to `http://localhost:5000`
-   - Default admin credentials:
-     - Username: `admin`
-     - Password: `admin123`
+4. **Run the application**
+   ```bash
+   python app.py
+   ```
 
-##  User Roles
+5. **Access the system**
+   - Open your browser and go to: `http://localhost:5000`
+   - Login with admin credentials:
+     - **Username**: `admin`
+     - **Password**: `admin123`
+
+## 📋 Default Admin Credentials
+
+After running `reset_db.py`, you can login with:
+- **Username**: `admin`
+- **Password**: `admin123`
+- **Email**: `admin@oraco.co.ke`
+
+## 🔧 System Architecture
+
+### Database Schema
+- **Users Table**: User accounts, roles, and authentication
+- **Files Table**: Encrypted file metadata and access control
+- **Activity Logs Table**: Complete audit trail of all actions
+
+### Security Implementation
+- **Encryption**: AES-256 with PBKDF2 key derivation
+- **Password Hashing**: Werkzeug's secure password hashing
+- **Session Management**: Flask session-based authentication
+- **Access Control**: Role-based permissions (admin/user)
+
+## 📊 Admin Dashboard Features
+
+### Statistics Overview
+- Total users in the system
+- Total encrypted files
+- Today's activity count
+- Today's login count
+
+### User Management
+- **Add Users**: Create new user accounts with roles
+- **Activate/Deactivate**: Enable or disable user accounts
+- **Delete Users**: Remove users and their associated files
+- **User Status**: Monitor user login activity and status
+
+### File Management
+- **View All Files**: See all encrypted files in the system
+- **File Details**: File type, size, owner, access count
+- **Delete Files**: Remove files from the system
+- **Sharing Info**: View which users have access to files
+
+### System Monitoring
+- **Activity Logs**: Complete audit trail with timestamps
+- **IP Tracking**: Monitor user access locations
+- **User Agents**: Track browser and device information
+- **Real-time Stats**: Live system statistics
+
+## 🔐 File Encryption Process
+
+1. **Upload**: User selects file and provides encryption password
+2. **Encryption**: File encrypted using AES-256 with PBKDF2 key derivation
+3. **Storage**: Encrypted file stored, original file deleted
+4. **Metadata**: File information stored in database
+5. **Access**: Users can download with original password
+
+## 👤 User Roles
 
 ### Admin Users
-- Access to admin dashboard
-- User management (add, view, manage users)
-- System logs monitoring
-- File oversight across organization
-- System statistics and monitoring
+- Full system access
+- User management capabilities
+- File monitoring and deletion
+- System logs access
+- Statistics dashboard
 
 ### Regular Users
-- File encryption and upload
-- File decryption and download
-- File sharing with other users
-- Personal activity history
-- Password management
+- Upload and encrypt files
+- Share files with other users
+- Download their own and shared files
+- View personal dashboard and activity
 
-##  Core Functionality
+## 📁 Supported File Types
 
-### File Encryption Process
-1. User uploads file with encryption password
-2. System generates salt and derives key using PBKDF2
-3. File encrypted using AES-256 via Fernet
-4. Original file deleted, encrypted version stored
-5. Activity logged with user details
+- **Documents**: PDF, DOC, DOCX, TXT
+- **Spreadsheets**: XLS, XLSX
+- **Images**: PNG, JPG, JPEG, GIF
+- **Archives**: ZIP
+- **Media**: MP4, MP3
 
-### File Decryption Process
-1. User requests file download with password
-2. System extracts salt from encrypted file
-3. Key derived from password and salt
-4. File decrypted and served to user
-5. Access logged and counters updated
-
-### Security Features
-- **Password Hashing**: Werkzeug's secure password hashing
-- **Key Derivation**: PBKDF2 with SHA-256, 100,000 iterations
-- **Salt Generation**: Cryptographically secure random salts
-- **Session Management**: Secure Flask sessions
-- **Activity Logging**: Complete audit trail
-- **File Access Control**: Owner and sharing permissions
-
-##  Database Schema
-
-### Users Table
-- User credentials and profile information
-- Role-based access control
-- Password reset token management
-- Activity tracking (last login, creation date)
-
-### Files Table
-- File metadata and encryption details
-- Owner and sharing information
-- Access statistics and timestamps
-- Encryption key hash for verification
-
-### Activity Logs Table
-- Complete user activity audit trail
-- IP address tracking
-- Timestamp and action details
-- System security monitoring
-
-##  Configuration
+## 🛠️ Configuration
 
 ### Environment Variables
-- `FLASK_SECRET_KEY`: Flask session secret (auto-generated if not set)
+- `EMAIL_ADDRESS`: Gmail address for password reset
+- `EMAIL_PASSWORD`: Gmail app password
+- `SECRET_KEY`: Flask secret key for sessions
 
-### File Upload Settings
-- **Max File Size**: 16MB
-- **Allowed Types**: TXT, PDF, PNG, JPG, JPEG, GIF, DOC, DOCX, XLS, XLSX
-- **Storage**: Encrypted files stored in `encrypted_files/` directory
+### File Size Limits
+- Maximum file size: 16MB
+- Configurable in `app.py`
 
-### Security Settings
-- **Key Derivation**: PBKDF2-HMAC-SHA256
-- **Iterations**: 100,000
-- **Salt Length**: 16 bytes
-- **Encryption**: AES-256 via Fernet
+## 🔍 Troubleshooting
 
-##  Usage Examples
+### Admin Login Issues
+1. Run `python reset_db.py` to reset database
+2. Use default credentials: `admin` / `admin123`
+3. Check if database file exists: `oraco_system.db`
 
-### Admin Tasks
-1. **Add New User**
-   - Login as admin → Admin Dashboard → Add New User
-   - Fill in user details and assign role
+### File Upload Issues
+1. Check file size (max 16MB)
+2. Verify file type is supported
+3. Ensure upload directory has write permissions
 
-2. **Monitor System Activity**
-   - Admin Dashboard → System Logs
-   - View real-time user activities and file operations
+### Email Issues
+1. Verify Gmail credentials in `app.py`
+2. Use Gmail App Password, not regular password
+3. Check SMTP settings
 
-3. **Manage Users**
-   - Admin Dashboard → Manage Users
-   - View all users, their status, and last login times
+## 📈 System Requirements
 
-### User Tasks
-1. **Encrypt and Upload File**
-   - Dashboard → Upload File
-   - Select file, enter strong password, optionally share
-   - File encrypted with AES-256 and stored securely
+- **Python**: 3.7 or higher
+- **Memory**: 512MB RAM minimum
+- **Storage**: Depends on file uploads
+- **Network**: For email functionality
 
-2. **Download and Decrypt File**
-   - Dashboard → View Files → Download
-   - Enter correct password to decrypt and download
+## 🔒 Security Best Practices
 
-3. **Share Files**
-   - During upload, select users to share with
-   - Shared users can decrypt with the same password
+1. **Change Default Admin Password**: Immediately after first login
+2. **Regular Backups**: Backup database and encrypted files
+3. **Monitor Logs**: Regularly check system activity logs
+4. **User Management**: Deactivate unused accounts
+5. **File Cleanup**: Remove unnecessary encrypted files
 
-## Security Best Practices
+## 📞 Support
 
-1. **Strong Passwords**: Use complex passwords for encryption
-2. **Regular Monitoring**: Check system logs regularly
-3. **User Management**: Remove inactive users promptly
-4. **Backup Strategy**: Regular database backups recommended
-5. **Network Security**: Use HTTPS in production
+For technical support or questions:
+- Check the system logs for error details
+- Verify all dependencies are installed
+- Ensure proper file permissions
 
-## Oraco Kenya Integration
+## 📄 License
 
-This system is designed specifically for Oraco Kenya's internal file security needs:
-- Departmental user organization
-- Kenyan email domain validation
-- Local time zone considerations
-- Organizational security policies compliance
-
-## Support
-
-For technical support or feature requests, contact the IT Department at Oraco Kenya.
-
-##  License
-
-Proprietary software for Oraco Kenya internal use only.
+This project is proprietary software for ORACO Kenya.
 
 ---
 
-**Built with security and usability in mind for Oraco Kenya's file encryption needs.**
+**⚠️ Important**: This system handles sensitive data. Always follow security best practices and regularly update passwords and access controls.

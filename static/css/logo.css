@@ -1,0 +1,118 @@
+/* Oraco Kenya Logo Styles */
+
+.oraco-logo {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.3rem;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.oraco-logo:hover {
+    color: #e3f2fd;
+    transform: translateY(-1px);
+}
+
+.logo-icon {
+    position: relative;
+    margin-right: 12px;
+    font-size: 1.8rem;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    animation: logoGlow 2s ease-in-out infinite alternate;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.logo-main {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.logo-subtitle {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #e3f2fd;
+    opacity: 0.9;
+}
+
+@keyframes logoGlow {
+    from {
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    to {
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4);
+    }
+}
+
+/* Login page logo */
+.login-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-logo-icon {
+    font-size: 4rem;
+    color: #007bff;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+    animation: loginLogoPulse 3s ease-in-out infinite;
+}
+
+.login-logo-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.login-logo-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+@keyframes loginLogoPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive logo */
+@media (max-width: 768px) {
+    .oraco-logo {
+        font-size: 1.1rem;
+    }
+    
+    .logo-icon {
+        font-size: 1.5rem;
+        margin-right: 8px;
+    }
+    
+    .logo-main {
+        font-size: 1rem;
+    }
+    
+    .logo-subtitle {
+        font-size: 0.6rem;
+    }
+    
+    .login-logo-icon {
+        font-size: 3rem;
+    }
+    
+    .login-logo-title {
+        font-size: 1.5rem;
+    }
+} 
